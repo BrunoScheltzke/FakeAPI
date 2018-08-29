@@ -1,0 +1,25 @@
+{
+  "name": "fakeapi",
+  "version": "1.0.0",
+  "description": "An API with a set of functions to verify the authenticy of news based on users'votes",
+  "main": "fakeApi.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/BrunoScheltzke/FakeAPI.git"
+  },
+  "keywords": [
+    "fakenews"
+  ],
+  "author": "Bruno Scheltzke",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/BrunoScheltzke/FakeAPI/issues"
+  },
+  "homepage": "https://github.com/BrunoScheltzke/FakeAPI#readme",
+  "dependencies": {
+    "express": "^4.16.3"
+  }
+}
