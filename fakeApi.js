@@ -1,20 +1,52 @@
+/**
+ * @file
+ * Provides api calls to vailidate a new
+ */
+
 const express = require('express')
+const axios = require('axios')
 const app = express()
 
 // KEYS
 const voteKey = 'vote'
-const newKey = 'new'
+const newsKey = 'news'
 
-// PATHS
-const voteForNewPath = `/${voteKey}/:${voteKey}/${newKey}/:${newKey}`
-const verifyNewPath = `/${newKey}/:${newKey}`
+// Faki API Endpoints
+const voteForNewsPath = `/${voteKey}/:${voteKey}/${newsKey}/:${newsKey}`
+const verifyNewsPath = `/${newsKey}/:${newsKey}`
 
-// API CALLS
-app.get(voteForNewPath, function(req, res) {
-    res.send(`You voted ${req.params['vote']} for ${req.params['new']}`)
+// Blockchain endpoints
+const voteForNewsBlockchain = `/${voteKey}/:${voteKey}/${newsKey}/:${newsKey}`
+
+// Blockchain calls
+/**
+ * Adds a vote for a news
+ * 
+ * @param {Boolean} vote 
+ * @param {URL} toNews 
+ */
+function add(vote, toNews) {
+    axios.post(voteForNewsBlockchain, {
+        voteKey: vote,
+        newsKey: toNews
+    })
+}
+
+// Api calls
+// Allows voting for a news by passing a vote(bool) and a news(url)
+app.post(voteForNewsPath, function(req, res) {
+    var vote = req.params[voteKey]
+    var news = req.params[newsKey]
+    axios.all([adds(vote, news)])
+    .then(axios.spread(function (voteStatus) {
+        console.log(voteStatus)
+    }))
+
+    res.send(`You voted ${req.params[voteKey]} for ${req.params[newsKey]}`)
 })
 
-app.get(verifyNewPath, function (req, res) {
+// Allows verifying a new
+app.get(verifyNewsPath, function (req, res) {
     res.send(req.params)
   })
 

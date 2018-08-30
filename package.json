@@ -20,6 +20,7 @@
   },
   "homepage": "https://github.com/BrunoScheltzke/FakeAPI#readme",
   "dependencies": {
+    "axios": "^0.18.0",
     "express": "^4.16.3"
   }
 }
