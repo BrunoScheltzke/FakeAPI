@@ -1,4 +1,4 @@
-import blockchain from './blockchain';
+const blockchain = require('./blockchain')
 
 const numVotesToBeSpam = 140
 const numVotesToBeLowHigh = 50
@@ -41,6 +41,17 @@ class User {
             }
         }
     }
+}
+
+exports.addVote = function add(vote, toNews, byUser) {
+    return new Promise(function(resolve, reject) {
+        blockchain.addVote(vote, toNews, byUser).then(function(result){
+            console.log(result)
+            resolve(result)
+        }, function(error) {
+            reject(error)
+        })
+    })
 }
 
 class Vote {
