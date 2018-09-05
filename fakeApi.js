@@ -28,13 +28,19 @@ app.post(voteForNewsPath, function(req, res) {
     server.addVote(vote, news, user).then(function(result) {
         res.send(`Success!${result}`)
     }, function(error) {
+        console.log(error)
         res.send(`Error!${error}`)
     })
 })
 
 // Allows verifying a new
 app.get(verifyNewsPath, function (req, res) {
-    res.send(req.params)
+    server.verifyNews(req.params[kNews]).then(function(result) {
+        res.send(result)
+    }, function(error) {
+        console.log(error)
+        res.send(error)
+    })
   })
 
 // RUN SERVER

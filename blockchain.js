@@ -5,7 +5,7 @@ exports.addVote = function add(vote, toNews, byUser) {
 }
 
 exports.getAllVotesToNews = function getAllVotesTo(news) {
-    return isMock ? getAllVotesTo(news) : null
+    return isMock ? mockGetAllVotesTo(news) : null
 }
 
 exports.getAllVotesBy = function getAllVotesBy(user) {
@@ -46,14 +46,20 @@ function mockSaveVote(someVote, someNews, someUser) {
     })
 }
 
-function getAllVotesTo(news) {
+function mockGetAllVotesTo(news) {
     return new Promise(function(resolve, _reject) {
-        resolve(mockVotesBlock.filter(value.news == news))
+        console.log('This are the mockVotesBlock!!')
+        console.log(mockVotesBlock)
+
+        console.log('This is the news!!')
+        console.log(news)
+        console.log(mockVotesBlock.filter(value => { return value.news == news }))
+        resolve(mockVotesBlock.filter(value => { return value.news == news }))
     })
 }
 
 function mockGetAllVotesBy(user) {
     return new Promise(function(resolve, _reject) {
-        resolve(mockVotesBlock.filter(value.user == user))
+        resolve(mockVotesBlock.filter(value => { return value.user === user}))
     })
 }
