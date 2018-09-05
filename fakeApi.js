@@ -2,29 +2,34 @@
  * @file
  * Provides api calls to vailidate a new
  */
-import server from './serverLogic';
-import express from 'express';
+const express = require('express')
+const server = require('./serverLogic')
 const app = express()
+const bodyParser = require('body-parser')
+app.use(bodyParser.json()) // support json encoded bodies
+app.use(bodyParser.urlencoded({ extended: true })) // support encoded bodies
 
 // KEYS
-const voteKey = 'vote'
-const newsKey = 'news'
+const kVote = 'vote'
+const kNews = 'news'
+const kUser = 'user'
 
 // Fake API Endpoints
-const voteForNewsPath = `/${voteKey}/:${voteKey}/${newsKey}/:${newsKey}`
-const verifyNewsPath = `/${newsKey}/:${newsKey}`
+const voteForNewsPath = `/${kVote}`
+const verifyNewsPath = `/${kNews}/:${kNews}`
 
 // Api calls
 // Allows voting for a news by passing a vote(bool) and a news(url)
 app.post(voteForNewsPath, function(req, res) {
-    //var vote = req.params[voteKey]
-    //var news = req.params[newsKey]
-    //axios.all([adds(vote, news)])
-    //.then(axios.spread(function (voteStatus) {
-    //    console.log(voteStatus)
-    //}))
+    var vote = req.body.vote
+    var news = req.body.news
+    var user = req.body.user
 
-    res.send(`You voted ${req.params[voteKey]} for ${req.params[newsKey]}`)
+    server.addVote(vote, news, user).then(function(result) {
+        res.send(`Success!${result}`)
+    }, function(error) {
+        res.send(`Error!${error}`)
+    })
 })
 
 // Allows verifying a new
