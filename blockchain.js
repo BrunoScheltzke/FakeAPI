@@ -33,6 +33,7 @@ class Block {
         this.vote = vote
         this.news = news
         this.user = user
+        this.date = new Date()
     }
 }
 
@@ -54,12 +55,18 @@ function mockGetAllVotesTo(news) {
         console.log('This is the news!!')
         console.log(news)
         console.log(mockVotesBlock.filter(value => { return value.news == news }))
-        resolve(mockVotesBlock.filter(value => { return value.news == news }))
+        resolve(mockVotesBlock.filter(value => { return value.news == news }).sort(function(a, b) {
+            // convert date object into number to resolve issue in typescript
+            return  +new Date(a.date) - +new Date(b.date);
+          }))
     })
 }
 
 function mockGetAllVotesBy(user) {
     return new Promise(function(resolve, _reject) {
-        resolve(mockVotesBlock.filter(value => { return value.user === user}))
+        resolve(mockVotesBlock.filter(value => { return value.user === user}).sort(function(a, b) {
+            // convert date object into number to resolve issue in typescript
+            return  +new Date(a.date) - +new Date(b.date);
+          }))
     })
 }

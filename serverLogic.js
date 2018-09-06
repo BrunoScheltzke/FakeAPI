@@ -40,6 +40,18 @@ class NewsVote {
     }
 }
 
+class Process {
+    constructor(id) {
+        this.id = id
+        this.news = []
+        this.users = []
+        this.verifiedNews = []
+        this.verifiedUsers = []
+    }
+}
+
+var processes = []
+
 const reputation = {
     SPAM: 0,
     LOW: 1,
@@ -54,6 +66,10 @@ const veracity = {
     NEUTRAL: 2
 }
 
+function isInArray(value, array) {
+    return array.indexOf(value) > -1;
+  }
+
 function add(vote, toNews, byUser) {
     return new Promise(function(resolve, reject) {
         blockchain.addVote(vote, toNews, byUser).then(function(result) {
@@ -65,20 +81,32 @@ function add(vote, toNews, byUser) {
     })
 }
 
-function verify(newsURL) {
+function verify(newsURL, processId) {
+    const index = processes.findIndex(value => { return value.id == processId })
+
+    const verifiedNews = processes[index].verifiedNews.find(value => {return value.url == newsURL})
+    if (verifiedNews != null) {
+        return new Promise.resolve(verifiedNews)
+    }
+
+    processes[index].news.push(newsURL)
+
     return new Promise(function(finishPromisse, reject) {
         //get all votes of news
         blockchain.getAllVotesToNews(newsURL).then(function(result) {
             //this result is an array of blocks(Block class) from the blockchain
-            //get reputation of each user that voted
-            Promise.all(result.map(value => { return calculateReputationOf(value.user)}))
+            //get reputation of each user that voted but the ones that cannot be verified yet
+            Promise.all(result.filter(value => { return !isInArray(value.user, processes[index].users) }).map(value => { return calculateReputationOf(value.user, processId)}))
                 .then(function(users) {
                     //calculate veracity based on users reputatation
                     var userVotes = users.map ( user => {
                         var vote = result.find(value => { return value.user == user.id }).vote
                         return new UserVote(user, vote)
                     })
-                    finishPromisse(calculateVeracity(newsURL, userVotes))
+                    const news = calculateVeracity(newsURL, userVotes)
+                    //let process know that user is already ok
+                    finishesNewsValidationInProcess(news, processId)
+                    finishPromisse(news)
                 }, function(err) { 
                     console.log(err)
                     reject(err) 
@@ -90,20 +118,32 @@ function verify(newsURL) {
     })
 }
 
-function calculateReputationOf(user) {
+function calculateReputationOf(user, processId) {
+    const index = processes.findIndex(value => { return value.id = processId })
+
+    const verifiedUser = processes[index].verifiedUsers.find(value => {return value.id == user})
+    if (verifiedUser != null) {
+        return new Promise.resolve(verifiedUser)
+    }
+
+    processes[index].users.push(user)
+
     return new Promise(function(finishPromisse, reject) {
         //get all votes made by user
         blockchain.getAllVotesBy(user).then(function(result) {
             //this result is an array of blocks(Block class) from the blockchain
-            //get veracity of each news voted by user
-            Promise.all(result.map(value => { return verify(value.news)}))
+            //get veracity of each news voted by user but the ones that cannot be verified yet
+            Promise.all(result.filter(value => { return !isInArray(value.news, processes[index].news) }).map(value => { return verify(value.news, processId)}))
                 .then(function(newsVeracities) {
                     var newsVotes = newsVeracities.map ( newsVeracity => {
                         var vote = result.find(value => { return value.news == newsVeracity.url }).vote
                         return new NewsVote(newsVeracity, vote)
                     })
                     //calculate reputation of user based on their votes on each news
-                    finishPromisse(calculateReputation(user, newsVotes))
+                    const userWithReputation = calculateReputation(user, newsVotes)
+                    //let process know that user is already ok
+                    finishesUserValidationInProcess(userWithReputation, processId)
+                    finishPromisse(userWithReputation)
                 }, function(err) {reject(err)})
         }, function(error) {reject(error)})
     })
@@ -123,7 +163,7 @@ function calculateVeracity(news, userVotes) {
                                 .reduce((acc, val) => acc + val.user.reputation, 0)
     var falseVotePoints = userVotes.filter( value => { return value.vote == false })
                                 .reduce((acc, val) => acc + val.user.reputation, 0)
-    var veracity = trueVotePoints > falseVotePoints ? veracity.TRUE : veracity.FALSE
+    var verac = trueVotePoints > falseVotePoints ? veracity.TRUE : veracity.FALSE
 
     //certainty
     var biggerPoints = trueVotePoints > falseVotePoints ? trueVotePoints : falseVotePoints
@@ -133,7 +173,9 @@ function calculateVeracity(news, userVotes) {
     var averageReputation = (trueVotePoints + falseVotePoints)/userVotes.length
     // NEED TO GET CLOSER REPUTATION
 
-    return new NewsVeracity(news, veracity, certainty, averageReputation)
+    console.log('Veracity DETERMINED')
+    console.log(news, verac, certainty, averageReputation)
+    return new NewsVeracity(news, verac, certainty, averageReputation)
 }
 
 function calculateReputation(user, newsVotes) {
@@ -162,8 +204,44 @@ function calculateReputation(user, newsVotes) {
         }
     }
 
+    console.log('reputation')
+    console.log(user, reput)
+
     return new User(user, reput)
 }
 
+function finishesUserValidationInProcess(user, processId) {
+    const index = processes.findIndex(value => { return value.id == processId })
+
+    const indexOfUser = processes[index].users.findIndex(value => { return value == user.id })
+    processes[index].users.splice(indexOfUser, 1)
+
+    processes[index].verifiedUsers.push(user)
+}
+
+function finishesNewsValidationInProcess(news, processId) {
+    const index = processes.findIndex(value => { return value.id == processId })
+
+    const indexOfNews = processes[index].news.findIndex(value => { return value == news.url })
+    processes[index].news.splice(indexOfNews, 1)
+
+    processes[index].verifiedNews.push(news)
+}
+
+function startNewsValidation(newsURL) {
+    const processId = newsURL
+
+    processes.push(new Process(processId))
+
+    return new Promise(function (finishPromisse, reject) {
+        verify(newsURL, processId).then((result) => {
+            //remove processId
+            var index = processes.indexOf(value => { return value.id == processId })
+            processes.splice(index, 1)
+            finishPromisse(result)
+        }).catch((error) => {reject(error)})
+    })
+}
+
 exports.addVote = add
-exports.verifyNews = verify
+exports.verifyNews = startNewsValidation
