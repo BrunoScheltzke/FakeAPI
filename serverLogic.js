@@ -96,11 +96,11 @@ function verify(newsURL, processId) {
         blockchain.getAllVotesToNews(newsURL).then(function(result) {
             //this result is an array of blocks(Block class) from the blockchain
             //get reputation of each user that voted but the ones that cannot be verified yet
-            Promise.all(result.filter(value => { return !isInArray(value.user, processes[index].users) }).map(value => { return calculateReputationOf(value.user, processId)}))
+            Promise.all(result.filter(value => { return !isInArray(value.userId, processes[index].users) }).map(value => { return calculateReputationOf(value.userId, processId)}))
                 .then(function(users) {
                     //calculate veracity based on users reputatation
                     var userVotes = users.map ( user => {
-                        var vote = result.find(value => { return value.user == user.id }).vote
+                        var vote = result.find(value => { return value.userId == user.id }).vote
                         return new UserVote(user, vote)
                     })
                     const news = calculateVeracity(newsURL, userVotes)
@@ -133,7 +133,7 @@ function calculateReputationOf(user, processId) {
         blockchain.getAllVotesBy(user).then(function(result) {
             //this result is an array of blocks(Block class) from the blockchain
             //get veracity of each news voted by user but the ones that cannot be verified yet
-            Promise.all(result.filter(value => { return !isInArray(value.news, processes[index].news) }).map(value => { return verify(value.news, processId)}))
+            Promise.all(result.filter(value => { return !isInArray(value.newsURL, processes[index].news) }).map(value => { return verify(value.newsURL, processId)}))
                 .then(function(newsVeracities) {
                     var newsVotes = newsVeracities.map ( newsVeracity => {
                         var vote = result.find(value => { return value.news == newsVeracity.url }).vote
@@ -150,8 +150,6 @@ function calculateReputationOf(user, processId) {
 }
 
 function calculateVeracity(news, userVotes) {
-    console.log('Calculate Veracity Of:')
-    console.log(news)
     //votes will be an array of UserVote
 
     if (userVotes.length < numVotesNecessaryToDetermineVeracity) {
@@ -173,14 +171,10 @@ function calculateVeracity(news, userVotes) {
     var averageReputation = (trueVotePoints + falseVotePoints)/userVotes.length
     // NEED TO GET CLOSER REPUTATION
 
-    console.log('Veracity DETERMINED')
-    console.log(news, verac, certainty, averageReputation)
     return new NewsVeracity(news, verac, certainty, averageReputation)
 }
 
 function calculateReputation(user, newsVotes) {
-    console.log('Calculate Reputation Of:')
-    console.log(user)
     //newsVotes will be an array of NewsVote
 
     var countOfVotes = newsVotes.length
@@ -203,9 +197,6 @@ function calculateReputation(user, newsVotes) {
             reput = reputation.LOW
         }
     }
-
-    console.log('reputation')
-    console.log(user, reput)
 
     return new User(user, reput)
 }
