@@ -1,6 +1,6 @@
 const got = require('got');
 const FormData = require('form-data');
-const isMock = false
+const isMock = true
 
 exports.addVote = function add(vote, toNews, byUser) {
     return isMock ? mockSaveVote(vote, toNews, byUser) : blockchainVote(vote, toNews, byUser)
@@ -86,9 +86,11 @@ var mockVotesBlock = []
 
 function mockSaveVote(someVote, someNews, someUser) {
     return new Promise(function(resolve, _reject) {
-        var newBlock = new Block(someVote, someNews, someUser, new Date())
+        var newBlock = {"vote": someVote, "newsURL": someNews, "userId": someUser, "date": new Date()}
         mockVotesBlock.push(newBlock)
-        resolve(mockVotesBlock)
+        console.log('Added vote')
+        console.log(newBlock)
+        resolve(newBlock)
     })
 }
 

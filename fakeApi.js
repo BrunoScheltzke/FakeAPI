@@ -26,7 +26,7 @@ app.post(voteForNewsPath, function(req, res) {
     var user = req.body.user
 
     server.addVote(vote, news, user).then(function(result) {
-        res.send(`Success!${result}`)
+        res.send(result)
     }, function(error) {
         console.log(error)
         res.send(`Error!${error}`)

@@ -73,7 +73,6 @@ function isInArray(value, array) {
 function add(vote, toNews, byUser) {
     return new Promise(function(resolve, reject) {
         blockchain.addVote(vote, toNews, byUser).then(function(result) {
-            console.log(`Added vote ${result}`)
             resolve(result)
         }, function(error) {
             reject(error)
