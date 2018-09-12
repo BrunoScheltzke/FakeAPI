@@ -5,8 +5,8 @@
 An API to collect and process people's opinions about news they see on the internet and determine their authenticity.
 People create a reputation based on their opinions and this reputation affects on the algorithm that determines the news veracity.
 
-## Colaboration: 
-This project is to integrate with with an [open source blockchain](https://github.com/regio/r2ac)
+## Collaboration: 
+This project is to integrate with an [open source blockchain](https://github.com/regio/r2ac)
 
 Two projects are currently being implemented to consume this api:
 - [iPhone app - FakeApp](https://github.com/BrunoScheltzke/FakeApp)
