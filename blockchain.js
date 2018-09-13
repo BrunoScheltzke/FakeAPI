@@ -1,6 +1,6 @@
 const got = require('got');
 const FormData = require('form-data');
-const isMock = true
+const isMock = false
 
 exports.addVote = function add(vote, toNews, byUser) {
     return isMock ? mockSaveVote(vote, toNews, byUser) : blockchainVote(vote, toNews, byUser)
@@ -14,17 +14,23 @@ exports.getAllVotesBy = function getAllVotesBy(user) {
     return isMock ? mockGetAllVotesBy(user) : blockchainGetAllVotesBy(user)
 }
 
+exports.createBlock = function createBlock(publicKey) {
+    return isMock ? mockCreateBlock(publicKey) : blockchainCreateBlock(publicKey)
+}
 
 // Blockchain funtions
 const votesKey = 'votes'
 const voteKey = 'vote'
 const userIdKey = 'userId'
 const newsURLKey = 'newsURL'
+const publicKeyKey = 'publicKey'
+const createBlockKey = 'createBlock'
 const blockKey = 'block'
-const basePath = 'http://192.168.25.9:5000'
+const basePath = 'http://localhost:5000'
 const votePath = `${basePath}/vote`
 const votesByUserPath = `${basePath}/votesBy/`
 const votesToNewsPath = `${basePath}/votesTo/`
+const createBlockPath = `${basePath}/${createBlockKey}`
 
 function blockchainVote(vote, newsURL, userId) {
     const form = new FormData()
@@ -72,6 +78,25 @@ function blockchainGetAllVotesBy(userId) {
     })
 }
 
+function blockchainCreateBlock(publicKey) {
+    console.log("Got to blockchain module")
+    console.log(publicKey)
+    const form = new FormData()
+    form.append(publicKeyKey, publicKey)
+    
+    return new Promise(function(finishPromise, reject) {
+        got.post(createBlockPath, {
+            body: form
+        }).then(function(response) {
+            console.log(response)
+            finishPromise(JSON.parse(response.body))
+        }).catch(function(error) {
+            console.log(error)
+            reject(error)
+        })
+    })
+}
+
 // MOCK functions
 class Block {
     constructor(vote, newsURL, userId, date) {
@@ -113,3 +138,5 @@ function mockGetAllVotesBy(user) {
           }))
     })
 }
+
+function mockCreateBlock(publicKey) {}
