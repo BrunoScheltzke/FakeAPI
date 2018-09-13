@@ -15,6 +15,7 @@ const kVote = 'vote'
 const kNews = 'news'
 const kUser = 'user'
 const kPublicKey = 'publicKey'
+const kAesKey = 'aesKey'
 const kCreateBlock = 'createBlock'
 
 // Fake API Endpoints
@@ -28,6 +29,8 @@ app.post(voteForNewsPath, function(req, res) {
     var vote = req.body.vote
     var news = req.body.news
     var user = req.body.user
+    var pubKey = req.body.publicKey
+    var aesKey = req.body.aesKey
 
     server.addVote(vote, news, user).then(function(result) {
         res.send(result)
