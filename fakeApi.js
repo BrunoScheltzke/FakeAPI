@@ -12,9 +12,8 @@ app.use(bodyParser.urlencoded({ extended: true })) // support encoded bodies
 
 // KEYS
 const kVote = 'vote'
-const kNews = 'news'
-const kUser = 'user'
-const kPublicKey = 'publicKey'
+const kNews = 'newsURL'
+const kPublicKey = 'userPublicKey'
 const kAesKey = 'aesKey'
 const kCreateBlock = 'createBlock'
 
@@ -27,12 +26,11 @@ const createBlockPath = `/${kCreateBlock}`
 // Allows voting for a news by passing a vote(bool) and a news(url)
 app.post(voteForNewsPath, function(req, res) {
     var vote = req.body.vote
-    var news = req.body.news
-    var user = req.body.user
-    var pubKey = req.body.publicKey
+    var newsURL = req.body.newsURL
+    var pubKey = req.body.userPublicKey
     var aesKey = req.body.aesKey
 
-    server.addVote(vote, news, user).then(function(result) {
+    server.addVote(vote, newsURL, pubKey).then(function(result) {
         res.send(result)
     }, function(error) {
         console.log(error)
@@ -53,7 +51,7 @@ app.get(verifyNewsPath, function (req, res) {
 // Allows adding a new block
 app.post(createBlockPath, function(req, res) {
     console.log("Received a block creation request")
-    const pubKey = req.body.publicKey
+    const pubKey = req.body.userPublicKey
     blockchain.createBlock(pubKey).then(function(result) {
         res.send(result)
     }).catch(function(error) {

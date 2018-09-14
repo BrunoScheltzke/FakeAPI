@@ -1,29 +1,28 @@
 const got = require('got');
 const FormData = require('form-data');
-const isMock = false
+const isMock = true
 
-exports.addVote = function add(vote, toNews, byUser) {
-    return isMock ? mockSaveVote(vote, toNews, byUser) : blockchainVote(vote, toNews, byUser)
+exports.addVote = function add(vote, toNewsURL, byUserPublicKey) {
+    return isMock ? mockSaveVote(vote, toNewsURL, byUserPublicKey) : blockchainVote(vote, toNewsURL, byUserPublicKey)
 }
 
-exports.getAllVotesToNews = function getAllVotesTo(news) {
-    return isMock ? mockGetAllVotesTo(news) : blockchainGetAllVotesToNews(news)
+exports.getAllVotesToNews = function getAllVotesTo(newsURL) {
+    return isMock ? mockGetAllVotesTo(newsURL) : blockchainGetAllVotesToNews(newsURL)
 }
 
-exports.getAllVotesBy = function getAllVotesBy(user) {
-    return isMock ? mockGetAllVotesBy(user) : blockchainGetAllVotesBy(user)
+exports.getAllVotesBy = function getAllVotesBy(userPublicKey) {
+    return isMock ? mockGetAllVotesBy(userPublicKey) : blockchainGetAllVotesBy(userPublicKey)
 }
 
-exports.createBlock = function createBlock(publicKey) {
-    return isMock ? mockCreateBlock(publicKey) : blockchainCreateBlock(publicKey)
+exports.createBlock = function createBlock(userPublicKey) {
+    return isMock ? mockCreateBlock(userPublicKey) : blockchainCreateBlock(userPublicKey)
 }
 
 // Blockchain funtions
 const votesKey = 'votes'
 const voteKey = 'vote'
-const userIdKey = 'userId'
 const newsURLKey = 'newsURL'
-const publicKeyKey = 'publicKey'
+const publicKeyKey = 'userPublicKey'
 const createBlockKey = 'createBlock'
 const blockKey = 'block'
 const basePath = 'http://localhost:5000'
@@ -32,10 +31,10 @@ const votesByUserPath = `${basePath}/votesBy/`
 const votesToNewsPath = `${basePath}/votesTo/`
 const createBlockPath = `${basePath}/${createBlockKey}`
 
-function blockchainVote(vote, newsURL, userId) {
+function blockchainVote(vote, newsURL, byUserPublicKey) {
     const form = new FormData()
     form.append(voteKey, vote)
-    form.append(userIdKey, userId)
+    form.append(publicKeyKey, byUserPublicKey)
     form.append(newsURLKey, newsURL)
 
     return new Promise(function(finishPromise, reject) {
@@ -65,9 +64,9 @@ function blockchainGetAllVotesToNews(newsURL) {
     })
 }
 
-function blockchainGetAllVotesBy(userId) {
+function blockchainGetAllVotesBy(userPublicKey) {
     return new Promise(function(finishPromise, reject) {
-        got(votesByUserPath + userId)
+        got(votesByUserPath + userPublicKey)
         .then(function(response) {
             finishPromise(JSON.parse(response.body))
         })
@@ -78,11 +77,11 @@ function blockchainGetAllVotesBy(userId) {
     })
 }
 
-function blockchainCreateBlock(publicKey) {
+function blockchainCreateBlock(userPublicKey) {
     console.log("Got to blockchain module")
-    console.log(publicKey)
+    console.log(userPublicKey)
     const form = new FormData()
-    form.append(publicKeyKey, publicKey)
+    form.append(publicKeyKey, userPublicKey)
     
     return new Promise(function(finishPromise, reject) {
         got.post(createBlockPath, {
@@ -99,19 +98,19 @@ function blockchainCreateBlock(publicKey) {
 
 // MOCK functions
 class Block {
-    constructor(vote, newsURL, userId, date) {
+    constructor(vote, newsURL, userPublicKey, date) {
         this.vote = vote
         this.newsURL = newsURL
-        this.userId = userId
+        this.userPublicKey = userPublicKey
         this.date = date
     }
 }
 
 var mockVotesBlock = []
 
-function mockSaveVote(someVote, someNews, someUser) {
+function mockSaveVote(someVote, someNews, userPublicKey) {
     return new Promise(function(resolve, _reject) {
-        var newBlock = {"vote": someVote, "newsURL": someNews, "userId": someUser, "date": new Date()}
+        var newBlock = {"vote": someVote, "newsURL": someNews, "userPublicKey": userPublicKey, "date": new Date()}
         mockVotesBlock.push(newBlock)
         console.log('Added vote')
         console.log(newBlock)
@@ -130,13 +129,13 @@ function mockGetAllVotesTo(news) {
     })
 }
 
-function mockGetAllVotesBy(user) {
+function mockGetAllVotesBy(userPublicKey) {
     return new Promise(function(resolve, _reject) {
-        resolve(mockVotesBlock.filter(value => { return value.user === user}).sort(function(a, b) {
+        resolve(mockVotesBlock.filter(value => { return value.userPublicKey === userPublicKey}).sort(function(a, b) {
             // convert date object into number to resolve issue in typescript
             return  +new Date(a.date) - +new Date(b.date);
           }))
     })
 }
 
-function mockCreateBlock(publicKey) {}
+function mockCreateBlock(userPublicKey) {}
