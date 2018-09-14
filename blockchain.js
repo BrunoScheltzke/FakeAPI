@@ -2,8 +2,8 @@ const got = require('got');
 const FormData = require('form-data');
 const isMock = true
 
-exports.addVote = function add(vote, toNewsURL, byUserPublicKey) {
-    return isMock ? mockSaveVote(vote, toNewsURL, byUserPublicKey) : blockchainVote(vote, toNewsURL, byUserPublicKey)
+exports.addVote = function add(encryptedVote, byUserPublicKey) {
+    return isMock ? mockSaveVote(encryptedVote, byUserPublicKey) : blockchainVote(encryptedVote, byUserPublicKey)
 }
 
 exports.getAllVotesToNews = function getAllVotesTo(newsURL) {
@@ -20,6 +20,7 @@ exports.createBlock = function createBlock(userPublicKey) {
 
 // Blockchain funtions
 const votesKey = 'votes'
+const encryptedVoteKey = 'encryptedVote'
 const voteKey = 'vote'
 const newsURLKey = 'newsURL'
 const publicKeyKey = 'userPublicKey'
@@ -31,11 +32,10 @@ const votesByUserPath = `${basePath}/votesBy/`
 const votesToNewsPath = `${basePath}/votesTo/`
 const createBlockPath = `${basePath}/${createBlockKey}`
 
-function blockchainVote(vote, newsURL, byUserPublicKey) {
+function blockchainVote(encryptedVote, userPublicKey) {
     const form = new FormData()
-    form.append(voteKey, vote)
-    form.append(publicKeyKey, byUserPublicKey)
-    form.append(newsURLKey, newsURL)
+    form.append(encryptedVoteKey, encryptedVote)
+    form.append(publicKeyKey, userPublicKey)
 
     return new Promise(function(finishPromise, reject) {
         got.post(votePath, {
@@ -108,9 +108,9 @@ class Block {
 
 var mockVotesBlock = []
 
-function mockSaveVote(someVote, someNews, userPublicKey) {
+function mockSaveVote(encryptedVote, userPublicKey) {
     return new Promise(function(resolve, _reject) {
-        var newBlock = {"vote": someVote, "newsURL": someNews, "userPublicKey": userPublicKey, "date": new Date()}
+        var newBlock = {"vote": true, "newsURL": "news1", "userPublicKey": userPublicKey, "date": new Date()}
         mockVotesBlock.push(newBlock)
         console.log('Added vote')
         console.log(newBlock)

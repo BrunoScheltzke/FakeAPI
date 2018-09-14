@@ -16,6 +16,7 @@ const kNews = 'newsURL'
 const kPublicKey = 'userPublicKey'
 const kAesKey = 'aesKey'
 const kCreateBlock = 'createBlock'
+const encryptedVote = 'encryptedVote'
 
 // Fake API Endpoints
 const voteForNewsPath = `/${kVote}`
@@ -25,12 +26,10 @@ const createBlockPath = `/${kCreateBlock}`
 // Api calls
 // Allows voting for a news by passing a vote(bool) and a news(url)
 app.post(voteForNewsPath, function(req, res) {
-    var vote = req.body.vote
-    var newsURL = req.body.newsURL
-    var pubKey = req.body.userPublicKey
-    var aesKey = req.body.aesKey
+    var vote = req.body.encryptedVote
+    var userPublicKey = req.body.userPublicKey
 
-    server.addVote(vote, newsURL, pubKey).then(function(result) {
+    server.addVote(encryptedVote, userPublicKey).then(function(result) {
         res.send(result)
     }, function(error) {
         console.log(error)

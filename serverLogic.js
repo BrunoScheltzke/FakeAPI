@@ -70,9 +70,9 @@ function isInArray(value, array) {
     return array.indexOf(value) > -1;
   }
 
-function add(vote, toNewsURL, userPublicKey) {
+function add(encryptedVote, userPublicKey) {
     return new Promise(function(resolve, reject) {
-        blockchain.addVote(vote, toNewsURL, userPublicKey).then(function(result) {
+        blockchain.addVote(encryptedVote, userPublicKey).then(function(result) {
             resolve(result)
         }, function(error) {
             reject(error)
