@@ -1,6 +1,6 @@
 const got = require('got');
 const FormData = require('form-data');
-const isMock = true
+const isMock = false
 
 exports.addVote = function add(encryptedVote, byUserPublicKey) {
     return isMock ? mockSaveVote(encryptedVote, byUserPublicKey) : blockchainVote(encryptedVote, byUserPublicKey)
@@ -38,10 +38,12 @@ function blockchainVote(encryptedVote, userPublicKey) {
     form.append(publicKeyKey, userPublicKey)
 
     return new Promise(function(finishPromise, reject) {
+        console.log("Will attempt to vote")
         got.post(votePath, {
             body: form
         }).then(function(response) {
-            finishPromise(JSON.parse(response.body))
+            console.log(response.body)
+            finishPromise(response.body)
         })
         .catch(function(error) {
             console.log(error)
@@ -87,7 +89,8 @@ function blockchainCreateBlock(userPublicKey) {
         got.post(createBlockPath, {
             body: form
         }).then(function(response) {
-            console.log(response)
+            console.log("Got response from block creation")
+            console.log(JSON.parse(response.body))
             finishPromise(JSON.parse(response.body))
         }).catch(function(error) {
             console.log(error)

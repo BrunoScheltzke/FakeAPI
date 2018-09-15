@@ -26,12 +26,12 @@ const createBlockPath = `/${kCreateBlock}`
 // Api calls
 // Allows voting for a news by passing a vote(bool) and a news(url)
 app.post(voteForNewsPath, function(req, res) {
-    var vote = req.body.encryptedVote
+    var encryptedVote = req.body.encryptedVote
     var userPublicKey = req.body.userPublicKey
 
     server.addVote(encryptedVote, userPublicKey).then(function(result) {
-        res.send(result)
-    }, function(error) {
+        res.sendStatus(200)
+    }).catch(function(error) {
         console.log(error)
         res.send(`Error!${error}`)
     })
