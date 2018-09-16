@@ -74,7 +74,7 @@ function add(encryptedVote, userPublicKey) {
     return new Promise(function(resolve, reject) {
         blockchain.addVote(encryptedVote, userPublicKey).then(function(result) {
             resolve(result)
-        }, function(error) {
+        }).catch(function(error) {
             reject(error)
         })
     })
@@ -85,7 +85,7 @@ function verify(newsURL, processId) {
 
     const verifiedNews = processes[index].verifiedNews.find(value => {return value.url == newsURL})
     if (verifiedNews != null) {
-        return new Promise.resolve(verifiedNews)
+        return new Promise().resolve(verifiedNews)
     }
 
     processes[index].news.push(newsURL)

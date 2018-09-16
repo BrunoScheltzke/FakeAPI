@@ -32,8 +32,7 @@ app.post(voteForNewsPath, function(req, res) {
     server.addVote(encryptedVote, userPublicKey).then(function(result) {
         res.sendStatus(200)
     }).catch(function(error) {
-        console.log(error)
-        res.send(`Error!${error}`)
+        res.status(500).send({errorCode: error.statusMessage})
     })
 })
 

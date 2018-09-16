@@ -42,11 +42,11 @@ function blockchainVote(encryptedVote, userPublicKey) {
         got.post(votePath, {
             body: form
         }).then(function(response) {
-            console.log(response.body)
+            console.log("Success adding vote")
             finishPromise(response.body)
         })
         .catch(function(error) {
-            console.log(error)
+            console.log("Error adding vote")
             reject(error)
         })
     })
