@@ -39,6 +39,7 @@ app.post(voteForNewsPath, function(req, res) {
 
 // Allows verifying a new
 app.get(verifyNewsPath, function (req, res) {
+    console.log("Ask to verify news")
     server.verifyNews(req.params[kNews]).then(function(result) {
         res.send(result)
     }, function(error) {

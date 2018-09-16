@@ -28,7 +28,7 @@ const createBlockKey = 'createBlock'
 const blockKey = 'block'
 const basePath = 'http://localhost:5000'
 const votePath = `${basePath}/vote`
-const votesByUserPath = `${basePath}/votesBy/`
+const votesByUserPath = `${basePath}/votesBy?userPublicKey=`
 const votesToNewsPath = `${basePath}/votesTo/`
 const createBlockPath = `${basePath}/${createBlockKey}`
 
@@ -53,10 +53,12 @@ function blockchainVote(encryptedVote, userPublicKey) {
 }
 
 function blockchainGetAllVotesToNews(newsURL) {
+    console.log("Will get all votes to news")
     return new Promise(function(finishPromise, reject) {
         got(votesToNewsPath + newsURL)
         .then(function(response) {
-            const result = JSON.parse(response.body).map(value => {return new Block(value.vote, value.newsURL, value.userId, value.date)})
+            const result = JSON.parse(response.body).map(value => {return new Block(value.vote, value.newsURL, value.userPublicKey, value.date)})
+            console.log(result)
             finishPromise(result)
         })
         .catch(function(error) {
@@ -67,9 +69,12 @@ function blockchainGetAllVotesToNews(newsURL) {
 }
 
 function blockchainGetAllVotesBy(userPublicKey) {
+    console.log("Will get all votes by user")
     return new Promise(function(finishPromise, reject) {
-        got(votesByUserPath + userPublicKey)
+        const encodedPubKey = encodeURIComponent(userPublicKey)
+        got(votesByUserPath + encodedPubKey)
         .then(function(response) {
+            console.log(response.body)
             finishPromise(JSON.parse(response.body))
         })
         .catch(function(error) {
