@@ -11,8 +11,8 @@ const percentageOfErrorToBeSpecialist = 10
 const numVotesNecessaryToDetermineVeracity = 50
 
 class User {
-    constructor(id, reputation) {
-        this.id = id
+    constructor(userPublicKey, reputation) {
+        this.userPublicKey = userPublicKey
         this.reputation = reputation
     }
 }
@@ -70,11 +70,11 @@ function isInArray(value, array) {
     return array.indexOf(value) > -1;
   }
 
-function add(vote, toNews, byUser) {
+function add(encryptedVote, userPublicKey) {
     return new Promise(function(resolve, reject) {
-        blockchain.addVote(vote, toNews, byUser).then(function(result) {
+        blockchain.addVote(encryptedVote, userPublicKey).then(function(result) {
             resolve(result)
-        }, function(error) {
+        }).catch(function(error) {
             reject(error)
         })
     })
@@ -85,7 +85,7 @@ function verify(newsURL, processId) {
 
     const verifiedNews = processes[index].verifiedNews.find(value => {return value.url == newsURL})
     if (verifiedNews != null) {
-        return new Promise.resolve(verifiedNews)
+        return new Promise().resolve(verifiedNews)
     }
 
     processes[index].news.push(newsURL)
@@ -95,11 +95,11 @@ function verify(newsURL, processId) {
         blockchain.getAllVotesToNews(newsURL).then(function(result) {
             //this result is an array of blocks(Block class) from the blockchain
             //get reputation of each user that voted but the ones that cannot be verified yet
-            Promise.all(result.filter(value => { return !isInArray(value.userId, processes[index].users) }).map(value => { return calculateReputationOf(value.userId, processId)}))
+            Promise.all(result.filter(value => { return !isInArray(value.userPublicKey, processes[index].users) }).map(value => { return calculateReputationOf(value.userPublicKey, processId)}))
                 .then(function(users) {
                     //calculate veracity based on users reputatation
                     var userVotes = users.map ( user => {
-                        var vote = result.find(value => { return value.userId == user.id }).vote
+                        var vote = result.find(value => { return value.userPublicKey == user.userPublicKey }).vote
                         return new UserVote(user, vote)
                     })
                     const news = calculateVeracity(newsURL, userVotes)
@@ -117,19 +117,19 @@ function verify(newsURL, processId) {
     })
 }
 
-function calculateReputationOf(user, processId) {
+function calculateReputationOf(userPublicKey, processId) {
     const index = processes.findIndex(value => { return value.id = processId })
 
-    const verifiedUser = processes[index].verifiedUsers.find(value => {return value.id == user})
+    const verifiedUser = processes[index].verifiedUsers.find(value => {return value.userPublicKey == userPublicKey})
     if (verifiedUser != null) {
         return new Promise.resolve(verifiedUser)
     }
 
-    processes[index].users.push(user)
+    processes[index].users.push(userPublicKey)
 
     return new Promise(function(finishPromisse, reject) {
         //get all votes made by user
-        blockchain.getAllVotesBy(user).then(function(result) {
+        blockchain.getAllVotesBy(userPublicKey).then(function(result) {
             //this result is an array of blocks(Block class) from the blockchain
             //get veracity of each news voted by user but the ones that cannot be verified yet
             Promise.all(result.filter(value => { return !isInArray(value.newsURL, processes[index].news) }).map(value => { return verify(value.newsURL, processId)}))
@@ -139,7 +139,7 @@ function calculateReputationOf(user, processId) {
                         return new NewsVote(newsVeracity, vote)
                     })
                     //calculate reputation of user based on their votes on each news
-                    const userWithReputation = calculateReputation(user, newsVotes)
+                    const userWithReputation = calculateReputation(userPublicKey, newsVotes)
                     //let process know that user is already ok
                     finishesUserValidationInProcess(userWithReputation, processId)
                     finishPromisse(userWithReputation)
@@ -173,7 +173,7 @@ function calculateVeracity(news, userVotes) {
     return new NewsVeracity(news, verac, certainty, averageReputation)
 }
 
-function calculateReputation(user, newsVotes) {
+function calculateReputation(userPublicKey, newsVotes) {
     //newsVotes will be an array of NewsVote
 
     var countOfVotes = newsVotes.length
@@ -197,13 +197,13 @@ function calculateReputation(user, newsVotes) {
         }
     }
 
-    return new User(user, reput)
+    return new User(userPublicKey, reput)
 }
 
 function finishesUserValidationInProcess(user, processId) {
     const index = processes.findIndex(value => { return value.id == processId })
 
-    const indexOfUser = processes[index].users.findIndex(value => { return value == user.id })
+    const indexOfUser = processes[index].users.findIndex(value => { return value == user.userPublicKey })
     processes[index].users.splice(indexOfUser, 1)
 
     processes[index].verifiedUsers.push(user)
