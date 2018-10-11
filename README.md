@@ -76,7 +76,7 @@ The project is currently being run at http://localhost:3000/ with the following 
                 vote: base64Encoded str loadable as json dictionary)
                     userPublicKey: str
                     vote: Boolean
-                    newsURL: str
+                    newsURL: base64Encoded str
                 signature: base64Encoded str
                     (The vote dictionary signed with the private key(RSA 1024))
 
@@ -93,7 +93,7 @@ The project is currently being run at http://localhost:3000/ with the following 
     A GET method to enable verifying the veracity of news
 
     #### Parameters Get
-      ars: String 
+      ars: base64Encoded str
          (the news URL)
     
     #### Returns
