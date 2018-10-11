@@ -220,6 +220,33 @@ function calculateReputation(userPublicKey, newsVotes) {
     return new User(userPublicKey, reput)
 }
 
+function getTrendingNews() {
+    var url1 = "aHR0cHM6Ly9jYXRyYWNhbGl2cmUuY29tLmJyL2NpZGFkYW5pYS9ib2xzb25hcm8tdGVtLW1lZG8tZS1lLXVtLWNvdmFyZGUtZnVqYW8tZGl6LXByZXNpZGVudGUtZG8tcGR0Lw=="
+    var url2 = "aHR0cHM6Ly9jYXRyYWNhbGl2cmUuY29tLmJyL2NpZGFkYW5pYS9hLWludG9sZXJhbmNpYS12ZW0tZG8tb3V0cm8tbGFkby1kaXotYm9sc29uYXJvLXNvYnJlLWF0YXF1ZXMv"
+    var url3 = "aHR0cHM6Ly9lY29ub21pYS5lc3RhZGFvLmNvbS5ici9ub3RpY2lhcy9nZXJhbCxwcm9wb3N0YXMtZGUtY2FuZGlkYXRvcy1wYXJhLWluc3MtY3VzdGFyaWFtLW1haXMtZGUtci0zMDAtYmktZW0tMjA0MCw3MDAwMjU0MzAxMQ=="
+    var url4 = "aHR0cHM6Ly9wb2xpdGljYS5lc3RhZGFvLmNvbS5ici9ub3RpY2lhcy9lbGVpY29lcyxwb2xpY2lhLWRpei1xdWUtam92ZW0tbWFyY2FkYS1jb20tc3Vhc3RpY2EtZm9pLXZpdGltYS1kZS1ob21vZm9iaWEsNzAwMDI1NDI5MTQ="
+    var url5 = "aHR0cHM6Ly9ub3RpY2lhcy5nb3NwZWxwcmltZS5jb20uYnIvaGFkZGFkLWFwb2lvLWV2YW5nZWxpY29zLWNuYmIv"
+    var url6 = "aHR0cHM6Ly9ub3RpY2lhcy5nb3NwZWxwcmltZS5jb20uYnIvbGVpLXByZXZlLWNhZGVpYS1wYXJhLWhvbW9mb2JpYS1lLXRyYW5zZm9iaWEtbmEtc3VpY2Ev"
+
+    return new Promise(function(finishPromisse, reject) {
+        var urls = [url6, url5, url4, url3, url2, url1]
+            var news = urls.map(url => { 
+                return new NewsVeracity(url, 0, 0, 0, reabilityIndex.NEUTRAL) 
+            })
+            finishPromisse(news)
+        // Promise.all(promisses).then(function(newsVeracities) {
+        //     finishPromisse(newsVeracities)
+        // }, function(error) {
+        //     console.log("---------- News not found, start them with 0 validation")
+        //     var urls = [url6, url5, url4, url3, url2, url1]
+        //     var news = urls.map(url => { 
+        //         return new NewsVeracity(url, 0, 0, 0, reabilityIndex.NEUTRAL) 
+        //     })
+        //     finishPromisse(news)
+        // })
+    })
+}
+
 function finishesUserValidationInProcess(user, processId) {
     const index = processes.findIndex(value => { return value.id == processId })
 
@@ -253,5 +280,6 @@ function startNewsValidation(newsURL) {
     })
 }
 
+exports.getTrendingNews = getTrendingNews
 exports.addVote = add
 exports.verifyNews = startNewsValidation

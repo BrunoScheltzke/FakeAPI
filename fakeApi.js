@@ -16,14 +16,26 @@ const kNews = 'newsURL'
 const kPublicKey = 'userPublicKey'
 const kAesKey = 'aesKey'
 const kCreateBlock = 'createBlock'
+const kTrendingNews = 'trendingNews'
 const encryptedVote = 'encryptedVote'
 
 // Fake API Endpoints
 const voteForNewsPath = `/${kVote}`
 const verifyNewsPath = `/${kNews}/:${kNews}`
 const createBlockPath = `/${kCreateBlock}`
+const trendingNewsPath = `/${kTrendingNews}`
 
 // Api calls
+// Allows getting trending news
+app.get(trendingNewsPath, function(req, res) {
+    server.getTrendingNews().then(function(result) {
+        res.send(result)
+    }, function(error) {
+        console.log(error)
+        res.send(error)
+    })
+})
+
 // Allows voting for a news by passing a vote(bool) and a news(url)
 app.post(voteForNewsPath, function(req, res) {
     var encryptedVote = req.body.encryptedVote
