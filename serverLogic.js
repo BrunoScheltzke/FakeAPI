@@ -10,6 +10,20 @@ const percentageOfErrorToBeSpecialist = 10
 
 const numVotesNecessaryToDetermineVeracity = 50
 
+const reputation = {
+    SPAM: 0,
+    LOW: 1,
+    NEUTRAL: 3,
+    HIGH: 50,
+    SPECIALIST: 150
+}
+
+const reabilityIndex = {
+    FALSE: 0,
+    TRUE: 1,
+    NEUTRAL: 2
+}
+
 class User {
     constructor(userPublicKey, reputation) {
         this.userPublicKey = userPublicKey
@@ -18,11 +32,12 @@ class User {
 }
 
 class NewsVeracity {
-    constructor(url, veracity, certainty, relevance) {
+    constructor(url, veracity, certainty, relevance, reliabilityIndex) {
         this.url = url
         this.veracity = veracity
         this.certainty = certainty
         this.relevance = relevance
+        this.reliabilityIndex = reliabilityIndex
     }
 }
 
@@ -51,20 +66,6 @@ class Process {
 }
 
 var processes = []
-
-const reputation = {
-    SPAM: 0,
-    LOW: 1,
-    NEUTRAL: 3,
-    HIGH: 50,
-    SPECIALIST: 150
-}
-
-const veracity = {
-    FALSE: 0,
-    TRUE: 1,
-    NEUTRAL: 2
-}
 
 function isInArray(value, array) {
     return array.indexOf(value) > -1;
@@ -97,9 +98,26 @@ function verify(newsURL, processId) {
             //get reputation of each user that voted but the ones that cannot be verified yet
             Promise.all(result.filter(value => { return !isInArray(value.userPublicKey, processes[index].users) }).map(value => { return calculateReputationOf(value.userPublicKey, processId)}))
                 .then(function(users) {
+                    //get unique users: users can vote multiple times
+                    var uniqueUsers = users.reduce((acc, inc) => {
+                        if(!acc.find( i => i.userPublicKey == inc.userPublicKey)) {
+                           acc.push(inc);
+                        }
+                        return acc;
+                    },[])
                     //calculate veracity based on users reputatation
-                    var userVotes = users.map ( user => {
-                        var vote = result.find(value => { return value.userPublicKey == user.userPublicKey }).vote
+                    var userVotes = uniqueUsers.map ( user => {
+                        //get last vote made by user
+                        var votesByUserOnThisNews = result.filter(value => value.userPublicKey == user.userPublicKey)
+                        var sorted = votesByUserOnThisNews.sort(function(a, b) {
+                            // convert date object into number to resolve issue in typescript
+                            var slicedData1 = a.date.slice(0, -4)
+                            var slicedData2 = b.date.slice(0, -4)
+                            var date1 = new Date(slicedData1)
+                            var date2 = new Date(slicedData2)
+                            return date1 - date2
+                        })
+                        var vote = sorted[sorted.length - 1].vote
                         return new UserVote(user, vote)
                     })
                     const news = calculateVeracity(newsURL, userVotes)
@@ -151,16 +169,12 @@ function calculateReputationOf(userPublicKey, processId) {
 function calculateVeracity(news, userVotes) {
     //votes will be an array of UserVote
 
-    if (userVotes.length < numVotesNecessaryToDetermineVeracity) {
-        return new NewsVeracity(news, veracity.NEUTRAL, 0, 0)
-    }
-
     //veracity
     var trueVotePoints = userVotes.filter( value => { return value.vote == true })
                                 .reduce((acc, val) => acc + val.user.reputation, 0)
     var falseVotePoints = userVotes.filter( value => { return value.vote == false })
                                 .reduce((acc, val) => acc + val.user.reputation, 0)
-    var verac = trueVotePoints > falseVotePoints ? veracity.TRUE : veracity.FALSE
+    var verac = trueVotePoints > falseVotePoints ? true : false
 
     //certainty
     var biggerPoints = trueVotePoints > falseVotePoints ? trueVotePoints : falseVotePoints
@@ -170,7 +184,13 @@ function calculateVeracity(news, userVotes) {
     var averageReputation = (trueVotePoints + falseVotePoints)/userVotes.length
     // NEED TO GET CLOSER REPUTATION
 
-    return new NewsVeracity(news, verac, certainty, averageReputation)
+    //calculate reability index
+    var index = reabilityIndex.NEUTRAL
+    if (userVotes.length > numVotesNecessaryToDetermineVeracity) {
+        index = trueVotePoints > falseVotePoints ? reabilityIndex.TRUE : reabilityIndex.FALSE
+    }
+
+    return new NewsVeracity(news, verac, certainty, averageReputation, index)
 }
 
 function calculateReputation(userPublicKey, newsVotes) {
