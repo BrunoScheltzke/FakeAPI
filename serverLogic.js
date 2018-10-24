@@ -1,6 +1,6 @@
 const blockchain = require('./blockchain')
 
-const numVotesToBeSpam = 140
+const numVotesToBeSpam = 100
 const numVotesToBeLowHigh = 50
 const numVotesToBeSpecialist = 200
 
@@ -21,7 +21,9 @@ const reputation = {
 const reabilityIndex = {
     FALSE: 0,
     TRUE: 1,
-    NEUTRAL: 2
+    NEUTRAL: 2,
+    FAKEISH: 3,
+    TRUEISH: 4
 }
 
 class User {
@@ -32,12 +34,13 @@ class User {
 }
 
 class NewsVeracity {
-    constructor(url, veracity, certainty, relevance, reliabilityIndex) {
+    constructor(url, veracity, certainty, relevance, reliabilityIndex, voters) {
         this.url = url
         this.veracity = veracity
         this.certainty = certainty
         this.relevance = relevance
         this.reliabilityIndex = reliabilityIndex
+        this.voters = voters
     }
 }
 
@@ -190,7 +193,7 @@ function calculateVeracity(news, userVotes) {
         index = trueVotePoints > falseVotePoints ? reabilityIndex.TRUE : reabilityIndex.FALSE
     }
 
-    return new NewsVeracity(news, verac, certainty, averageReputation, index)
+    return new NewsVeracity(news, verac, certainty, averageReputation, index, userVotes)
 }
 
 function calculateReputation(userPublicKey, newsVotes) {
@@ -230,7 +233,19 @@ function getTrendingNews() {
 
     return new Promise(function(finishPromisse, reject) {
         var urls = [url6, url5, url4, url3, url2, url1]
-            var news = urls.map(url => { 
+            var news = urls.map(url => {
+                if (url === url3) { 
+                    return new NewsVeracity(url, 0, 0, 0, reabilityIndex.TRUE) 
+                } 
+                if (url === url5) {
+                    return new NewsVeracity(url, 0, 0, 0, reabilityIndex.FALSE)     
+                }
+                if (url === url4) { 
+                    return new NewsVeracity(url, 0, 0, 0, reabilityIndex.TRUEISH) 
+                } 
+                if (url === url2) {
+                    return new NewsVeracity(url, 0, 0, 0, reabilityIndex.FAKEISH)     
+                }
                 return new NewsVeracity(url, 0, 0, 0, reabilityIndex.NEUTRAL) 
             })
             finishPromisse(news)
