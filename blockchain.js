@@ -18,6 +18,14 @@ exports.createBlock = function createBlock(userPublicKey) {
     return isMock ? mockCreateBlock(userPublicKey) : blockchainCreateBlock(userPublicKey)
 }
 
+exports.trendingNews = function trendingNews(quantity) {
+    return blockchainTrendingNews(quantity)
+}
+
+exports.getAllVotes = function getAllVotes() {
+    return blockchainGetAllVotes()
+}
+
 // Blockchain funtions
 const votesKey = 'votes'
 const encryptedVoteKey = 'encryptedVote'
@@ -31,6 +39,22 @@ const votePath = `${basePath}/vote`
 const votesByUserPath = `${basePath}/votesBy?userPublicKey=`
 const votesToNewsPath = `${basePath}/votesTo/`
 const createBlockPath = `${basePath}/${createBlockKey}`
+const allVotesPath = `${basePath}/allVotes`
+const trendingNewsPath = `${basePath}/popularNews/`
+
+function blockchainTrendingNews(quantity) {
+    console.log("Will get trending news")
+    return new Promise(function(finishPromise, reject) {
+        got(trendingNewsPath + quantity)
+        .then(function(response) {
+            finishPromise(response.body)
+        })
+        .catch(function(error) {
+            console.log(error)
+            reject(error)
+        })
+    })
+}
 
 function blockchainVote(encryptedVote, userPublicKey) {
     const form = new FormData()
@@ -58,7 +82,6 @@ function blockchainGetAllVotesToNews(newsURL) {
         got(votesToNewsPath + newsURL)
         .then(function(response) {
             const result = JSON.parse(response.body).map(value => {return new Block(value.vote, value.newsURL, value.userPublicKey, value.date)})
-            console.log(result)
             finishPromise(result)
         })
         .catch(function(error) {
@@ -74,7 +97,6 @@ function blockchainGetAllVotesBy(userPublicKey) {
         const encodedPubKey = encodeURIComponent(userPublicKey)
         got(votesByUserPath + encodedPubKey)
         .then(function(response) {
-            console.log(response.body)
             finishPromise(JSON.parse(response.body))
         })
         .catch(function(error) {
@@ -85,7 +107,7 @@ function blockchainGetAllVotesBy(userPublicKey) {
 }
 
 function blockchainCreateBlock(userPublicKey) {
-    console.log("Got to blockchain module")
+    console.log("Got to creation of user")
     console.log(userPublicKey)
     const form = new FormData()
     form.append(publicKeyKey, userPublicKey)
@@ -98,6 +120,21 @@ function blockchainCreateBlock(userPublicKey) {
             console.log(JSON.parse(response.body))
             finishPromise(JSON.parse(response.body))
         }).catch(function(error) {
+            console.log(error)
+            reject(error)
+        })
+    })
+}
+
+function blockchainGetAllVotes() {
+    console.log("Will get all votes from chain")
+    return new Promise(function(finishPromise, reject) {
+        got(allVotesPath)
+        .then(function(response) {
+            const result = JSON.parse(response.body).map(value => {return new Block(value.vote, value.newsURL, value.userPublicKey, value.date)})
+            finishPromise(result)
+        })
+        .catch(function(error) {
             console.log(error)
             reject(error)
         })
