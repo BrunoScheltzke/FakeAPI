@@ -84,7 +84,7 @@ The project is currently being run at http://localhost:3000/ with the following 
     * 200 - Success
     * 500 - Error with statusMessage indicating error
         * 11 - No block found for given public key
-        * 12 - No communicatino key (AES) found for given public key
+        * 12 - No communication key (AES) found for given public key
         * 13 - Invalid signature
               
 ### Verifying veracity of news
