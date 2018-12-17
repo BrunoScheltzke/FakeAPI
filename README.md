@@ -43,7 +43,7 @@ The project is currently being run at http://localhost:3000/ with the following 
     
     arg: Dictionary
     
-        userPublicKey: str
+        userPublicKey: base 64 str
             (The public key - RSA 1024)
 
     #### Returns
