@@ -72,7 +72,8 @@ The project is currently being run at http://localhost:3000/ with the following 
         userPublicKey: str
             (The public key(RSA 1024))
         encryptedVote: str
-            (A dictionary encrypted(AES CBC Padding PKCS7) with the 32 bytes AES server communication key(received after creation of block))
+            (A dictionary encrypted(AES CBC Padding PKCS7) with the 32 bytes 
+            AES server communication key(received after creation of block))
                 vote: base64Encoded str loadable as json dictionary)
                     userPublicKey: str
                     vote: Boolean
